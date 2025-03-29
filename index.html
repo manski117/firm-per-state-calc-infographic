@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Law Firm Subscription Revenue Calculator</title>
+    <style>
+        :root {
+            --primary: #2a5298;
+            --secondary: #4caf50;
+            --accent: #ff9800;
+            --background: #f9f9f9;
+            --card: #ffffff;
+            --text: #333333;
+            --light-text: #666666;
+            --border: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--light-text);
+            font-size: 18px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .controls-card {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            height: 10px;
+            background: #d3d3d3;
+            outline: none;
+            border-radius: 5px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .metric-card {
+            background: linear-gradient(to bottom right, var(--primary), #1a365d);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-label {
+            font-size: 16px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .metric-subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            height: 400px;
+            position: relative;
+        }
+
+        .bar-container {
+            display: flex;
+            justify-content: space-between;
+            height: 100%;
+            align-items: flex-end;
+            padding-bottom: 50px;
+        }
+
+        .bar-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            margin: 0 10px;
+            max-width: 120px;
+        }
+
+        .bar {
+            width: 100%;
+            background: linear-gradient(to top, var(--primary), var(--accent));
+            border-radius: 5px 5px 0 0;
+            transition: height 0.5s ease;
+            position: relative;
+            min-height: 1px;
+        }
+
+        .bar-label {
+            margin-top: 10px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .axis {
+            position: absolute;
+            left: 0;
+            bottom: 50px;
+            width: 100%;
+            height: 2px;
+            background-color: var(--text);
+        }
+
+        .help-text {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(42, 82, 152, 0.1);
+            border-left: 4px solid var(--primary);
+            border-radius: 4px;
+        }
+
+        .help-text h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .help-text p {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .map-container {
+            height: 300px;
+            margin-top: 20px;
+            background-color: #e9f5f9;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .us-map {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 5px;
+            padding: 10px;
+            height: 100%;
+        }
+
+        .state {
+            background-color: #ccc;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .state:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .state.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .state:not(.active):hover {
+            background-color: #a0cdf7;
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .toggle-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-option {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 5px;
+            border: 2px solid var(--primary);
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-option.active {
+            background-color: var(--primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Law Firm Subscription Revenue Calculator</h1>
+            <p class="subtitle">Visualize your potential revenue based on subscription price, market penetration, and time period</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="card controls-card">
+                <h2>Subscription Parameters</h2>
+
+                <div class="form-group">
+                    <label for="subscription-price">Monthly Subscription Price ($)</label>
+                    <div class="slider-container">
+                        <input type="range" id="subscription-price" min="1000" max="10000" step="100" value="2500">
+                        <input type="number" id="subscription-price-display" min="1000" max="10000" step="100" value="2500">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="num-states">Number of States</label>
+                    <div class="slider-container">
+                        <input type="range" id="num-states" min="1" max="50" step="1" value="50">
+                        <input type="number" id="num-states-display" min="1" max="50" step="1" value="50">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="firms-per-state">Firms per State</label>
+                    <div class="slider-container">
+                        <input type="range" id="firms-per-state" min="1" max="100" step="1" value="1">
+                        <input type="number" id="firms-per-state-display" min="1" max="100" step="1" value="1">
+                    </div>
+                </div>
+
+                <div class="toggle-container">
+                    <div class="toggle-option active" data-period="monthly">Monthly</div>
+                    <div class="toggle-option" data-period="yearly">Yearly</div>
+                </div>
+
+                <div class="help-text">
+                    <h3>How to use this calculator</h3>
+                    <p>Adjust the sliders to see how your revenue changes based on subscription price, number of states, and firms per state.</p>
+                    <p>Click on individual states in the map to add or remove them from your calculations.</p>
+                    <p>Toggle between monthly and yearly views to see your revenue projections over different time periods.</p>
+                </div>
+            </div>
+
+            <div class="card results-card">
+                <div class="results-container">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Revenue</div>
+                        <div class="metric-value" id="total-revenue">$125,000</div>
+                        <div class="metric-subtitle" id="revenue-period">per month</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Revenue per State</div>
+                        <div class="metric-value" id="revenue-per-state">$2,500</div>
+                        <div class="metric-subtitle" id="state-period">per month</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Annualized Revenue</div>
+                        <div class="metric-value" id="annual-revenue">$1,500,000</div>
+                        <div class="metric-subtitle">per year</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Revenue Projection</h3>
+                    <div class="bar-container" id="bar-chart">
+                        <!-- Bars will be generated by JavaScript -->
+                    </div>
+                    <div class="axis"></div>
+                </div>
+
+                <div class="map-container">
+                    <h3>State Coverage Map</h3>
+                    <div class="us-map" id="us-map">
+                        <!-- States will be generated by JavaScript -->
+                    </div>
+                    <div class="map-legend">
+                        <span>Active States: </span><span id="active-states-count">50</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State abbreviations for the simplified map - sorted alphabetically
+        let stateAbbreviations = [
+            'AK', 'AL', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+            'HI', 'IA', 'ID', 'IL', 'IN', 'KS', 'KY', 'LA', 'MA', 'MD',
+            'ME', 'MI', 'MN', 'MO', 'MS', 'MT', 'NC', 'ND', 'NE', 'NH',
+            'NJ', 'NM', 'NV', 'NY', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+            'SD', 'TN', 'TX', 'UT', 'VA', 'VT', 'WA', 'WI', 'WV', 'WY'
+        ];
+        
+        // Track active states
+        let activeStates = [...Array(50)].map(() => true);
+
+        // Initialize the US map with click functionality
+        const usMap = document.getElementById('us-map');
+        stateAbbreviations.forEach((state, index) => {
+            const stateElement = document.createElement('div');
+            stateElement.className = 'state active';
+            stateElement.textContent = state;
+            stateElement.dataset.index = index;
+            stateElement.dataset.state = state;
+            
+            // Add click functionality to toggle state active/inactive
+            stateElement.addEventListener('click', () => {
+                toggleState(index);
+            });
+            
+            usMap.appendChild(stateElement);
+        });
+        
+        // Handle toggling state active/inactive status
+        function toggleState(index) {
+            activeStates[index] = !activeStates[index];
+            updateStateVisuals();
+            
+            // Update the slider to match the number of active states
+            const activeCount = countActiveStates();
+            numStatesSlider.value = activeCount;
+            numStatesDisplay.value = activeCount;
+            
+            // Update calculations
+            updateCalculations();
+        }
+        
+        // Count active states
+        function countActiveStates() {
+            return activeStates.filter(state => state).length;
+        }
+        
+        // Update visual display of active/inactive states
+        function updateStateVisuals() {
+            const stateElements = document.querySelectorAll('.state');
+            stateElements.forEach((element, index) => {
+                if (activeStates[index]) {
+                    element.classList.add('active');
+                } else {
+                    element.classList.remove('active');
+                }
+            });
+            
+            activeStatesCount.textContent = countActiveStates();
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        // Initialize chart
+        function initChart() {
+            const barChart = document.getElementById('bar-chart');
+            barChart.innerHTML = '';
+
+            // Set up bars for 1, 10, 25, and 50 states
+            const stateCounts = [1, 10, 25, 50];
+            
+            stateCounts.forEach(count => {
+                const barGroup = document.createElement('div');
+                barGroup.className = 'bar-group';
+                
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.id = `bar-${count}`;
+                
+                const barValue = document.createElement('div');
+                barValue.className = 'bar-value';
+                barValue.id = `bar-value-${count}`;
+                
+                const barLabel = document.createElement('div');
+                barLabel.className = 'bar-label';
+                barLabel.textContent = `${count} State${count > 1 ? 's' : ''}`;
+                
+                bar.appendChild(barValue);
+                barGroup.appendChild(bar);
+                barGroup.appendChild(barLabel);
+                barChart.appendChild(barGroup);
+            });
+        }
+
+        // Initialize the chart
+        initChart();
+
+        // Get all the elements we need
+        const subscriptionPriceSlider = document.getElementById('subscription-price');
+        const subscriptionPriceDisplay = document.getElementById('subscription-price-display');
+        const numStatesSlider = document.getElementById('num-states');
+        const numStatesDisplay = document.getElementById('num-states-display');
+        const firmsPerStateSlider = document.getElementById('firms-per-state');
+        const firmsPerStateDisplay = document.getElementById('firms-per-state-display');
+        const totalRevenueElement = document.getElementById('total-revenue');
+        const revenuePerStateElement = document.getElementById('revenue-per-state');
+        const annualRevenueElement = document.getElementById('annual-revenue');
+        const revenuePeriodElement = document.getElementById('revenue-period');
+        const statePeriodElement = document.getElementById('state-period');
+        const toggleOptions = document.querySelectorAll('.toggle-option');
+        const activeStatesCount = document.getElementById('active-states-count');
+
+        // Set up period toggle
+        let currentPeriod = 'monthly';
+        toggleOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                toggleOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                currentPeriod = this.dataset.period;
+                updateCalculations();
+            });
+        });
+
+        // Sync sliders with number inputs
+        function syncInputs(slider, display) {
+            slider.addEventListener('input', () => {
+                display.value = slider.value;
+                updateCalculations();
+            });
+            display.addEventListener('input', () => {
+                slider.value = display.value;
+                updateCalculations();
+            });
+        }
+
+        syncInputs(subscriptionPriceSlider, subscriptionPriceDisplay);
+        syncInputs(numStatesSlider, numStatesDisplay);
+        syncInputs(firmsPerStateSlider, firmsPerStateDisplay);
+
+        // Update map based on states slider
+        numStatesSlider.addEventListener('input', updateStateMap);
+        numStatesDisplay.addEventListener('input', updateStateMap);
+
+        function updateStateMap() {
+            const targetNumStates = parseInt(numStatesSlider.value);
+            const currentNumStates = countActiveStates();
+            
+            if (targetNumStates === currentNumStates) {
+                // No change needed
+                return;
+            } else if (targetNumStates > currentNumStates) {
+                // Need to activate more states
+                addStates(targetNumStates - currentNumStates);
+            } else {
+                // Need to deactivate some states
+                removeStates(currentNumStates - targetNumStates);
+            }
+            
+            updateStateVisuals();
+            updateCalculations();
+        }
+        
+        // Add states in alphabetical order
+        function addStates(numToAdd) {
+            let added = 0;
+            for (let i = 0; i < activeStates.length && added < numToAdd; i++) {
+                if (!activeStates[i]) {
+                    activeStates[i] = true;
+                    added++;
+                }
+            }
+        }
+        
+        // Remove states in reverse alphabetical order
+        function removeStates(numToRemove) {
+            let removed = 0;
+            for (let i = activeStates.length - 1; i >= 0 && removed < numToRemove; i--) {
+                if (activeStates[i]) {
+                    activeStates[i] = false;
+                    removed++;
+                }
+            }
+        }
+
+        // Calculate and update values
+        function updateCalculations() {
+            const subscriptionPrice = parseFloat(subscriptionPriceSlider.value);
+            const numStates = countActiveStates(); // Use actual count of active states
+            const firmsPerState = parseInt(firmsPerStateSlider.value);
+            
+            const monthlyRevenuePerState = subscriptionPrice * firmsPerState;
+            const monthlyTotalRevenue = monthlyRevenuePerState * numStates;
+            const yearlyTotalRevenue = monthlyTotalRevenue * 12;
+            
+            const isYearly = currentPeriod === 'yearly';
+            const totalRevenue = isYearly ? yearlyTotalRevenue : monthlyTotalRevenue;
+            const revenuePerState = isYearly ? monthlyRevenuePerState * 12 : monthlyRevenuePerState;
+            
+            // Update metric displays
+            totalRevenueElement.textContent = formatCurrency(totalRevenue);
+            revenuePerStateElement.textContent = formatCurrency(revenuePerState);
+            annualRevenueElement.textContent = formatCurrency(yearlyTotalRevenue);
+            revenuePeriodElement.textContent = isYearly ? 'per year' : 'per month';
+            statePeriodElement.textContent = isYearly ? 'per year' : 'per month';
+            
+            // Update chart
+            updateChart(subscriptionPrice, firmsPerState, isYearly);
+        }
+
+        // Update the bar chart
+        function updateChart(price, firmsPerState, isYearly) {
+            const stateCounts = [1, 10, 25, 50];
+            const maxHeight = 300; // Maximum height for the tallest bar
+            
+            // Calculate the values for each bar
+            const values = stateCounts.map(count => {
+                const monthlyRevenue = price * firmsPerState * count;
+                return isYearly ? monthlyRevenue * 12 : monthlyRevenue;
+            });
+            
+            // Find the maximum value to normalize heights
+            const maxValue = Math.max(...values);
+            
+            // Update each bar
+            stateCounts.forEach((count, index) => {
+                const bar = document.getElementById(`bar-${count}`);
+                const barValue = document.getElementById(`bar-value-${count}`);
+                const value = values[index];
+                const height = (value / maxValue) * maxHeight;
+                
+                bar.style.height = `${height}px`;
+                barValue.textContent = formatCurrency(value);
+            });
+        }
+
+        // Initial calculations
+        updateCalculations();
+    </script>
+</body>
+</html>
